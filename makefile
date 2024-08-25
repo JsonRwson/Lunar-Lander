@@ -1,7 +1,7 @@
 all: landermake run
 
-landermake: lander.c levels.c
-	gcc -o lander lander.c levels.c -lncurses
+landermake: main.c game.c render.c input.c levels.h
+	gcc -o lander main.c game.c render.c input.c levels.c -lncurses
 
 run: lander
 	./lander
