@@ -1,2 +1,2 @@
 # Lunar-Lander
-Implementation of the classic Lunar Lander arcade game in c using the ncurses library
+A simplified Implementation of the classic Lunar Lander arcade game in c using the ncurses library
