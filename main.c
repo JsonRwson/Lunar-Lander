@@ -3,41 +3,77 @@
 #include <stdbool.h>
 #include <time.h>
 #include "game.h"
-#include <unistd.h>
 #include "render.h"
 #include "input.h"
 #include "levels.h"
+#include <unistd.h>
 
-#define FRAME_RATE 10
-#define FRAME_DURATION (1000000 / FRAME_RATE) // in microseconds
+#define FRAME_RATE 4
+#define FRAME_DURATION (1000000 / FRAME_RATE) // Frame duration in microseconds
 
 int main()
 {
-    // game vairables, 2 windows, x and y positions etc
-    WINDOW *gameWin;
-    WINDOW *infoWin;
+    int ch; // Variable to store user input for restarting or quitting
 
-    int xpos = 1, ypos = 1, xspeed = 0.5, yspeed = 1;
-    int fuel = 100, score = 0, direction = 0, thrust = 0;
-    bool gameOver = false;
-
-    initGame(&gameWin, &infoWin);
-    nodelay(stdscr, TRUE); // Make getch non-blocking
-
-    struct timespec lastTime;
-    clock_gettime(CLOCK_MONOTONIC, &lastTime);
-
-    while(!gameOver)
+    do
     {
-        usleep(FRAME_DURATION);
-        handleInput(&direction, &thrust, &fuel);
-        updateGame(gameWin, infoWin, &xpos, &ypos, &xspeed, &yspeed, &fuel, &score, &direction, &thrust, &gameOver);
-        renderGame(gameWin, infoWin, xpos, ypos, xspeed, yspeed, fuel, score, direction, thrust);
-    }
+        // Game variables
+        WINDOW *gameWin; // Game window
+        WINDOW *infoWin; // Info window
+        int xpos = 20, ypos = 5; // Initial position of the lander
+        int xspeed = 0, yspeed = 0; // Initial speed of the lander
+        int fuel = 1000, score = 100, direction = 0, thrust = 0; // Game stats
+        int frame_counter = 0; // Frame counter for timing
+        bool gameOver = false; // Game over flag
 
-    timeout(-1);
-    getch();
+        // Initialize the game environment
+        initGame(&gameWin, &infoWin);
 
+        // Configure ncurses settings
+        nodelay(stdscr, TRUE); // Non-blocking input
+        keypad(stdscr, TRUE); // Enable special keys
+        curs_set(0); // Hide the cursor
+
+        // Track the last frame time
+        struct timespec lastTime;
+        clock_gettime(CLOCK_MONOTONIC, &lastTime);
+
+        // Main game loop
+        while (!gameOver)
+        {
+            usleep(FRAME_DURATION); // Wait for the next frame
+
+            // Handle user input
+            handleInput(&direction, &thrust, &fuel);
+
+            // Update the game state
+            updateGame(gameWin, infoWin, &xpos, &ypos, &xspeed, &yspeed,
+                       &fuel, &score, &direction, &thrust, &gameOver, &frame_counter);
+
+            // Render the game state
+            renderGame(gameWin, infoWin, xpos, ypos, xspeed, yspeed,
+                       fuel, score, direction, thrust);
+        }
+
+        // Display the game over screen
+        timeout(-1); // Blocking input for game over screen
+        mvwprintw(gameWin, 15, 50, "Game Over! Press 'r' to restart or 'q' to quit.");
+        wrefresh(gameWin);
+
+        // Wait for user input to restart or quit
+        do
+        {
+            ch = getch();
+        } while (ch != 'q' && ch != 'r');
+
+        // Clean up windows and reset the screen
+        delwin(gameWin);
+        delwin(infoWin);
+        clear();
+        refresh();
+    } while (ch == 'r'); // Restart the game if 'r' is pressed
+
+    // End ncurses mode
     endwin();
     return 0;
 }

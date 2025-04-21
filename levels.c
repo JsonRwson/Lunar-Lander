@@ -1,7 +1,10 @@
-#include <stdio.h>
+#include "levels.h"
 
-int lvl1x = 191;
-int lvl1y = 34;
+int lvl1x = 132;
+int lvl1y = 18;
+int lvl2x = 125;
+int lvl2y = 24;
+
 char* level1[] = {
 "                            ---2--",
 "                           |      \\                                                          ---2---",
